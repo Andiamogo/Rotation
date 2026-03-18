@@ -11,7 +11,11 @@ interface RecapPanelProps {
 export function RecapPanel({ state }: RecapPanelProps) {
   if (state.outcome === 'won') return null
 
-  const { confirmedGenres, confirmedActors, confirmedDirector, yearRange, confirmedCountry, hints } = state
+  const { confirmedGenres, confirmedActors, confirmedDirector, yearRange, confirmedCountry, hints, guesses } = state
+
+  // Derive target genre count from the latest genre comparison
+  const lastGenreComp = guesses.flatMap((g) => g.comparisons).filter((c) => c.attribute === 'genres').pop()
+  const targetGenreCount = lastGenreComp && 'targetCount' in lastGenreComp ? lastGenreComp.targetCount : null
 
   const hasContent =
     confirmedGenres.length > 0 ||
@@ -67,15 +71,29 @@ export function RecapPanel({ state }: RecapPanelProps) {
 
       {/* Genres */}
       {confirmedGenres.length > 0 && (
-        <Section icon={<Clapperboard size={11} />} label="Genres">
+        <Section
+          icon={<Clapperboard size={11} />}
+          label="Genres"
+          count={targetGenreCount ? `${confirmedGenres.length}/${targetGenreCount}` : `${confirmedGenres.length}`}
+          status="correct"
+        >
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {confirmedGenres.map((g) => (
               <span key={g.id} className="pop" style={{
                 padding: '3px 10px', borderRadius: 99, fontSize: '0.75rem', fontWeight: 600,
-                background: 'var(--gold-dim)', color: 'var(--gold)',
-                border: '1px solid rgba(232,184,75,0.25)',
+                background: 'rgba(74,222,128,0.1)', color: 'var(--correct)',
+                border: '1px solid rgba(74,222,128,0.3)',
               }}>
                 {g.name}
+              </span>
+            ))}
+            {targetGenreCount && Array.from({ length: targetGenreCount - confirmedGenres.length }, (_, i) => (
+              <span key={`unknown-${i}`} style={{
+                padding: '3px 10px', borderRadius: 99, fontSize: '0.75rem', fontWeight: 600,
+                background: 'rgba(255,255,255,0.05)', color: 'var(--text-soft)',
+                border: '1px solid var(--border)',
+              }}>
+                ?
               </span>
             ))}
           </div>

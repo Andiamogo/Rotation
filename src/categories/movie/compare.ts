@@ -27,7 +27,8 @@ export function compareCountry(guess: Movie, target: Movie): CountryComparison {
 export function compareRating(guess: Movie, target: Movie): RatingComparison {
   const diff = guess.rating - target.rating
   const direction = diff === 0 ? 'exact' : diff < 0 ? 'up' : 'down'
-  return { attribute: 'rating', value: guess.rating, direction }
+  const status = diff === 0 ? 'correct' : Math.abs(diff) <= 1 ? 'close' : 'incorrect'
+  return { attribute: 'rating', value: guess.rating, status, direction }
 }
 
 export function compareDirector(guess: Movie, target: Movie): DirectorComparison {
@@ -52,6 +53,7 @@ export function compareActors(guess: Movie, target: Movie): ActorComparison {
 
 export function compareGenres(guess: Movie, target: Movie): GenreComparison {
   const targetIds = new Set(target.genres.map((g) => g.id))
-  const matched = guess.genres.filter((g) => targetIds.has(g.id))
-  return { attribute: 'genres', matchedGenres: matched }
+  const genres = guess.genres.map((g) => ({ ...g, match: targetIds.has(g.id) }))
+  const matchedCount = genres.filter((g) => g.match).length
+  return { attribute: 'genres', genres, matchedCount, targetCount: target.genres.length }
 }

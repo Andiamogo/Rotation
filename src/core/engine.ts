@@ -85,8 +85,8 @@ function aggregateKnowledge(state: GameState): GameState {
   for (const comp of lastGuess.comparisons) {
     switch (comp.attribute) {
       case 'genres': {
-        for (const g of comp.matchedGenres) {
-          if (!confirmedGenres.find((cg) => cg.id === g.id)) {
+        for (const g of comp.genres) {
+          if (g.match && !confirmedGenres.find((cg) => cg.id === g.id)) {
             confirmedGenres = [...confirmedGenres, g]
           }
         }

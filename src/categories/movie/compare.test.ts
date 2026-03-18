@@ -135,8 +135,11 @@ describe('compareGenres', () => {
       baseMovie({ genres: [{ id: 28, name: 'Action' }, { id: 18, name: 'Drame' }] }),
       baseMovie({ genres: [{ id: 28, name: 'Action' }] })
     )
-    expect(r.matchedGenres).toHaveLength(1)
-    expect(r.matchedGenres[0].id).toBe(28)
+    expect(r.matchedCount).toBe(1)
+    expect(r.targetCount).toBe(1)
+    expect(r.genres).toHaveLength(2)
+    expect(r.genres.find((g) => g.id === 28)?.match).toBe(true)
+    expect(r.genres.find((g) => g.id === 18)?.match).toBe(false)
   })
 
   it('aucun genre en commun', () => {
@@ -144,6 +147,7 @@ describe('compareGenres', () => {
       baseMovie({ genres: [{ id: 18, name: 'Drame' }] }),
       baseMovie({ genres: [{ id: 28, name: 'Action' }] })
     )
-    expect(r.matchedGenres).toHaveLength(0)
+    expect(r.matchedCount).toBe(0)
+    expect(r.genres[0].match).toBe(false)
   })
 })

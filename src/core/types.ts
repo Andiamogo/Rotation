@@ -21,6 +21,7 @@ export interface CountryComparison {
 export interface RatingComparison {
   attribute: 'rating'
   value: number
+  status: ComparisonStatus
   direction: Direction
 }
 
@@ -37,7 +38,9 @@ export interface ActorComparison {
 
 export interface GenreComparison {
   attribute: 'genres'
-  matchedGenres: Genre[]
+  genres: Array<Genre & { match: boolean }>
+  matchedCount: number
+  targetCount: number
 }
 
 export type AttributeComparison =

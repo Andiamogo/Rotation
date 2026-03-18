@@ -19,7 +19,6 @@ export function GuessRow({ result, index }: GuessRowProps) {
 
   const matchedActors = actors?.actors.filter((a) => a.match).length ?? 0
   const totalActors   = actors?.actors.length ?? 0
-  const matchedGenres = genres?.matchedGenres.length ?? 0
 
   return (
     <div
@@ -72,22 +71,21 @@ export function GuessRow({ result, index }: GuessRowProps) {
           )}
 
           {rating && (
-            <Chip icon={<Star size={11} />} label="Note" status="neutral">
+            <Chip icon={<Star size={11} />} label="Note" status={rating.status}>
               {rating.value}{rating.direction !== 'exact' && <Arrow dir={rating.direction} />}
             </Chip>
           )}
         </div>
 
         {/* Genres */}
-        {genres && matchedGenres > 0 && (
+        {genres && (
           <Section
             icon={<Clapperboard size={11} />}
-            label="Genres en commun"
-            count={`${matchedGenres}`}
+            label="Genres"
           >
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {genres.matchedGenres.map((g) => (
-                <Pill key={g.id} status="correct">{g.name}</Pill>
+              {genres.genres.map((g) => (
+                <Pill key={g.id} status={g.match ? 'correct' : 'neutral'}>{g.name}</Pill>
               ))}
             </div>
           </Section>
