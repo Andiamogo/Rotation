@@ -1,0 +1,15 @@
+node_modules
+.DS_Store
+.vscode
+dist
+dist-ssr
+*.local
+.env
+.nitro
+.tanstack
+.wrangler
+.output
+.vinxi
+public/movies.json
+__unconfig*
+todos.json
