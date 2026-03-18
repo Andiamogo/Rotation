@@ -3,21 +3,12 @@ services:
     build:
       context: .
       target: runner
+    ports:
+      - "3000:3000"
     environment:
       - NODE_ENV=production
-      - NITRO_HOST=0.0.0.0
     env_file:
       - .env
-    restart: unless-stopped
-
-  nginx:
-    build:
-      context: .
-      target: nginx-runner
-    ports:
-      - "3000:80"
-    depends_on:
-      - node
     restart: unless-stopped
 
   app-dev:

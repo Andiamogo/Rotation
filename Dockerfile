@@ -22,9 +22,3 @@ COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/package.json ./
 EXPOSE 3000
 CMD ["sh", "-c", "bun run generate:movies && bun --bun dist/server/server.js"]
-
-# ── Stage 4: nginx avec les assets du même build ──────────────────────────
-FROM nginx:alpine AS nginx-runner
-# Assets client issus du même build que le serveur node → hashes identiques
-COPY --from=builder /app/dist/client/assets /app/dist/client/assets
-COPY nginx.conf /etc/nginx/conf.d/default.conf
