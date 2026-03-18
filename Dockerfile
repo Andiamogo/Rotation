@@ -20,5 +20,6 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/package.json ./
+COPY --from=builder /app/server.ts ./
 EXPOSE 3000
-CMD ["sh", "-c", "bun run generate:movies && bun --bun dist/server/server.js"]
+CMD ["sh", "-c", "bun run generate:movies && bun --bun server.ts"]
