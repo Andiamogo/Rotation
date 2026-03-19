@@ -19,7 +19,7 @@ export function CountryBadge({ code, highlight = false }: CountryBadgeProps) {
           boxShadow: '0 1px 3px rgba(0,0,0,0.4)',
         }}
       />
-      <span style={{ color: highlight ? 'var(--correct)' : 'var(--text)' }}>
+      <span style={{ color: highlight ? 'var(--correct)' : 'inherit' }}>
         {countryName(code)}
       </span>
     </span>

@@ -118,6 +118,10 @@ function aggregateKnowledge(state: GameState): GameState {
           if (comp.direction === 'down' && (yearRange.max === null || comp.value < yearRange.max)) {
             yearRange = { ...yearRange, max: comp.value }
           }
+          // Si min et max encadrent une seule année possible → exact
+          if (yearRange.min !== null && yearRange.max !== null && yearRange.max - yearRange.min === 2) {
+            yearRange = { min: yearRange.min + 1, max: yearRange.min + 1, exact: yearRange.min + 1 }
+          }
         }
         break
       }

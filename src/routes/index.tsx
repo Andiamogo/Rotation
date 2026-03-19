@@ -17,9 +17,14 @@ function GamePage() {
   const { movies, targetMovie } = Route.useLoaderData()
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
+    <div className="cinema-bg" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Cinema atmosphere */}
+      <div className="cinema-sunburst" />
+      <div className="cinema-vignette" />
+      <div className="cinema-spotlight" />
+
       <PageHeader />
-      <main style={{ flex: 1, width: '100%', maxWidth: 680, margin: '0 auto', padding: '24px 16px 48px' }}>
+      <main style={{ flex: 1, width: '100%', maxWidth: 720, margin: '0 auto', padding: '24px 16px 48px', position: 'relative', zIndex: 3 }}>
         <ClientOnly fallback={<LoadingState />}>
           <Game movies={movies} targetMovie={targetMovie} />
         </ClientOnly>
@@ -45,9 +50,9 @@ function Game({
       {isOver ? (
         <EndScreen state={state} targetMovie={targetMovie} />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <SearchBar movies={movies} onSelect={guess} disabled={guessing} alreadyGuessed={alreadyGuessed} />
-          <LivesDisplay attempts={state.attempts} maxAttempts={state.maxAttempts} />
+          <FilmStrip attempts={state.attempts} maxAttempts={state.maxAttempts} />
         </div>
       )}
 
@@ -57,10 +62,7 @@ function Game({
       {/* Guesses */}
       {state.guesses.length > 0 ? (
         <section>
-          <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-soft)', marginBottom: 12 }}>
-            Essais — {state.guesses.length} / {state.maxAttempts}
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[...state.guesses].reverse().map((result, i) => (
               <GuessRow key={result.guessedMovieId} result={result} index={state.guesses.length - 1 - i} />
             ))}
@@ -76,45 +78,44 @@ function Game({
 function PageHeader() {
   return (
     <header style={{
-      borderBottom: '1px solid var(--border)',
-      background: 'linear-gradient(180deg, #0d1018 0%, var(--bg-raised) 100%)',
+      position: 'relative',
+      zIndex: 5,
+      padding: '24px 16px 16px',
     }}>
-      <div style={{ maxWidth: 680, margin: '0 auto', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <h1 style={{
-            fontFamily: '"Bebas Neue", Impact, sans-serif',
-            fontSize: '2.2rem',
-            letterSpacing: '0.18em',
-            color: 'var(--gold)',
-            lineHeight: 1,
-          }}>
-            CINÉDLE
-          </h1>
-          <p style={{ fontSize: '0.62rem', color: 'var(--text-soft)', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 3 }}>
-            Le film du jour
-          </p>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: '1.2rem' }}>🎬</span>
-        </div>
+      <div style={{ maxWidth: 720, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Logo />
       </div>
     </header>
   )
 }
 
-function LivesDisplay({ attempts, maxAttempts }: { attempts: number; maxAttempts: number }) {
+function FilmStrip({ attempts, maxAttempts }: { attempts: number; maxAttempts: number }) {
+  const remaining = maxAttempts - attempts
+
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6 }}>
-      {Array.from({ length: maxAttempts }).map((_, i) => (
-        <div key={i} style={{
-          width: 8, height: 8, borderRadius: '50%',
-          background: i >= maxAttempts - attempts ? 'var(--border-strong)' : 'var(--gold)',
-          transition: 'background 0.3s',
-          flexShrink: 0,
-        }} />
-      ))}
-      <span style={{ fontSize: '0.62rem', color: 'var(--text-soft)', marginLeft: 6 }}>
-        {maxAttempts - attempts} restant{maxAttempts - attempts > 1 ? 's' : ''}
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 6 }}>
+        {Array.from({ length: maxAttempts }).map((_, i) => {
+          const isRemaining = i < remaining
+          return (
+            <img
+              key={i}
+              src="/assets/film-frame.png"
+              alt=""
+              draggable={false}
+              className={isRemaining ? 'film-life-on' : 'film-life-off'}
+              style={{ width: 32, height: 'auto' }}
+            />
+          )
+        })}
+      </div>
+      <span style={{
+        fontSize: '0.85rem',
+        fontWeight: 700,
+        color: 'var(--gold)',
+        whiteSpace: 'nowrap',
+      }}>
+        {remaining} restant{remaining > 1 ? 's' : ''}
       </span>
     </div>
   )
@@ -122,23 +123,25 @@ function LivesDisplay({ attempts, maxAttempts }: { attempts: number; maxAttempts
 
 function EmptyState({ maxAttempts }: { maxAttempts: number }) {
   return (
-    <div style={{
-      background: 'var(--bg-card)',
-      border: '1px solid var(--border)',
-      borderRadius: 16,
-      padding: '48px 24px',
+    <div className="cinema-stage-card slide-up" style={{
+      padding: '56px 24px',
       textAlign: 'center',
+      position: 'relative',
     }}>
-      <div style={{ fontSize: '2.5rem', marginBottom: 16, opacity: 0.6 }}>🎞️</div>
-      <p style={{ color: 'var(--text)', fontWeight: 600, marginBottom: 8 }}>
-        Quel film as-tu en tête ?
-      </p>
-      <p style={{ color: 'var(--text-soft)', fontSize: '0.82rem', lineHeight: 1.6 }}>
-        Tape un titre dans la barre ci-dessus.<br />
-        Tu as <strong style={{ color: 'var(--gold)' }}>{maxAttempts} essais</strong> pour trouver le film du jour.
-      </p>
-      <div style={{ marginTop: 20 }}>
-        <LivesDisplay attempts={0} maxAttempts={maxAttempts} />
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <h2 style={{
+          fontFamily: '"Playfair Display", Georgia, serif',
+          fontSize: '1.6rem',
+          fontWeight: 700,
+          color: 'var(--text)',
+          marginBottom: 12,
+        }}>
+          Quel film as-tu en tête ?
+        </h2>
+        <p style={{ color: 'var(--text-soft)', fontSize: '0.88rem', lineHeight: 1.7 }}>
+          Tape un titre dans la barre ci-dessus.<br />
+          Tu as <strong style={{ color: 'var(--gold)' }}>{maxAttempts} essais</strong> pour trouver le film du jour.
+        </p>
       </div>
     </div>
   )
@@ -146,10 +149,7 @@ function EmptyState({ maxAttempts }: { maxAttempts: number }) {
 
 function LoadingState() {
   return (
-    <div style={{
-      background: 'var(--bg-card)',
-      border: '1px solid var(--border)',
-      borderRadius: 16,
+    <div className="cinema-stage-card" style={{
       padding: '48px 24px',
       textAlign: 'center',
       color: 'var(--text-soft)',
@@ -157,5 +157,78 @@ function LoadingState() {
     }}>
       Chargement…
     </div>
+  )
+}
+
+function Logo() {
+  return (
+    <svg width="623" height="247" viewBox="0 0 623 247" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: 'min(420px, 70vw)', height: 'auto' }} aria-label="Cinédle">
+      <g filter="url(#f0)">
+        <path d="M350.356 41H539.155C539.707 41 540.153 41.4508 540.167 42.003C540.704 64.1833 559.004 82 581.502 82C581.776 82 582 82.2211 582 82.4953V164.505C582 164.779 581.776 165 581.502 165C559.004 165 540.704 182.816 540.167 204.997C540.153 205.549 539.707 206 539.155 206H82.849C82.2967 206 81.8502 205.549 81.8369 204.997C81.3118 183.308 63.8014 165.792 41.991 165.026C41.4436 165.007 41 164.562 41 164.015V82.9855C41 82.4377 41.4437 81.9931 41.991 81.9739C63.8014 81.2082 81.3118 63.6917 81.8369 42.0029C81.8502 41.4508 82.2967 41 82.849 41H302.035" stroke="white" strokeWidth="4"/>
+      </g>
+      <g filter="url(#f1)">
+        <path d="M295 55H57C56.4477 55 56 55.4477 56 56V191C56 191.552 56.4477 192 57 192H566C566.552 192 567 191.552 567 191V56C567 55.4477 566.542 55 565.99 55C476.946 55 421.653 55 342 55" stroke="white" strokeWidth="4"/>
+      </g>
+      <g filter="url(#f2)">
+        <path d="M142.76 149.155C144.241 149.155 144.982 149.986 144.982 151.648C144.982 153.021 143.934 154.394 141.838 155.767C137.936 158.333 134.648 160.013 131.974 160.808C126.952 162.289 121.676 163.03 116.148 163.03C110.62 163.03 105.29 162.054 100.159 160.103C95.0645 158.116 90.7104 155.352 87.0972 151.811C79.5454 144.367 75.7695 134.756 75.7695 122.977C75.7695 117.304 76.8354 112.101 78.9673 107.367C81.0991 102.598 84.0439 98.5148 87.8018 95.1184C95.751 87.9279 105.742 84.3327 117.774 84.3327C124.531 84.3327 130.475 85.489 135.605 87.8015C141.062 90.2224 143.79 92.2819 143.79 93.9802C143.79 94.6667 143.555 95.2629 143.085 95.7688C142.651 96.2746 142.146 96.5275 141.567 96.5275C140.411 96.5275 139.363 96.0217 138.424 95.01C137.484 93.9621 136.202 93.0227 134.576 92.1916C132.986 91.3605 131.233 90.6379 129.318 90.0236C125.416 88.8313 121.857 88.2351 118.641 88.2351C115.461 88.2351 112.824 88.4519 110.728 88.8855V158.369C113.257 158.802 115.498 159.019 117.449 159.019C119.4 159.019 121.387 158.893 123.411 158.64C125.434 158.387 127.421 157.971 129.373 157.393C133.745 156.092 137.033 154.177 139.237 151.648C140.032 150.709 140.664 150.058 141.134 149.697C141.604 149.336 142.146 149.155 142.76 149.155Z" fill="white"/>
+        <path d="M157.502 85.3083H185.144V162H157.502V85.3083Z" fill="white"/>
+        <path d="M208.287 154.25L208.449 159.67C208.449 160.609 208.196 161.332 207.69 161.838C207.185 162.343 206.57 162.596 205.848 162.596C205.161 162.596 204.583 162.362 204.113 161.892C203.644 161.422 203.409 160.916 203.409 160.374C203.409 159.796 203.445 159.272 203.517 158.802C203.625 158.297 203.716 157.737 203.788 157.122C203.969 156.074 204.059 153.455 204.059 149.263V81.8396L262.974 128.559V96.2565C262.974 93.7995 262.901 92.0471 262.757 90.9992C262.576 89.301 262.486 88.1086 262.486 87.4221C262.486 85.6154 263.263 84.7121 264.816 84.7121C265.431 84.7121 266.009 84.9289 266.551 85.3625C267.129 85.7961 267.418 86.4284 267.418 87.2595V89.1564L267.201 97.0153V164.981L208.287 118.749V154.25Z" fill="white"/>
+        <path d="M334.191 157.339C336.034 157.339 336.956 158.062 336.956 159.507C336.956 160.157 336.558 160.736 335.763 161.241C334.968 161.747 333.595 162 331.644 162H285.737V85.3083C299.974 85.3083 314.21 85.3083 328.446 85.3083L332.891 85.1457C335.601 85.1457 336.956 85.9406 336.956 87.5305C336.956 88.1447 336.721 88.7229 336.251 89.2648C335.817 89.7707 335.312 90.0236 334.733 90.0236C333.794 90.0236 332.8 89.9152 331.752 89.6984C330.199 89.3732 328.067 89.2106 325.357 89.2106H313.379V105.741H323.243C323.243 105.741 325.465 105.651 329.91 105.47C330.705 105.47 331.373 105.669 331.915 106.067C332.493 106.428 332.782 106.952 332.782 107.638C332.782 109.156 331.771 109.915 329.747 109.915L327.417 109.861C326.224 109.752 325.23 109.698 324.436 109.698H313.379V158.044H325.357C328.031 158.044 329.928 157.935 331.048 157.718C332.385 157.466 333.433 157.339 334.191 157.339Z" fill="white"/>
+        <path d="M351.481 85.3083H374.028C384.542 85.3083 392.257 86.049 397.171 87.5305C402.771 89.2648 407.089 91.487 410.125 94.197C413.196 96.9069 415.599 99.7072 417.333 102.598C420.874 108.488 422.645 115.172 422.645 122.652C422.645 134.431 418.417 143.97 409.962 151.269C403.964 156.508 396.9 159.742 388.77 160.97C384.253 161.657 377.93 162 369.8 162H351.481V85.3083ZM379.123 157.502C379.701 157.538 380.225 157.556 380.694 157.556H381.941C391.733 157.556 400.098 154.503 407.035 148.396C414.37 141.965 418.038 133.419 418.038 122.76C418.038 116.039 416.43 109.987 413.214 104.603C408.553 96.7624 401.182 92.0109 391.101 90.3488C387.812 89.8068 383.82 89.4997 379.123 89.4274V157.502Z" fill="white"/>
+        <path d="M483.456 157.068C485.371 157.068 486.329 157.881 486.329 159.507C486.329 160.157 485.931 160.736 485.136 161.241C484.377 161.747 483.004 162 481.017 162H437.007V85.3083H464.649V158.423H474.784C477.061 158.423 479.012 158.206 480.638 157.773C482.3 157.303 483.239 157.068 483.456 157.068Z" fill="white"/>
+        <path d="M544.268 157.339C546.11 157.339 547.032 158.062 547.032 159.507C547.032 160.157 546.634 160.736 545.839 161.241C545.044 161.747 543.671 162 541.72 162H495.813V85.3083C510.05 85.3083 524.286 85.3083 538.522 85.3083L542.967 85.1457C545.677 85.1457 547.032 85.9406 547.032 87.5305C547.032 88.1447 546.797 88.7229 546.327 89.2648C545.894 89.7707 545.388 90.0236 544.81 90.0236C543.87 90.0236 542.876 89.9152 541.829 89.6984C540.275 89.3732 538.143 89.2106 535.433 89.2106H523.455V105.741H533.319C533.319 105.741 535.542 105.651 539.986 105.47C540.781 105.47 541.449 105.669 541.991 106.067C542.569 106.428 542.858 106.952 542.858 107.638C542.858 109.156 541.847 109.915 539.823 109.915L537.493 109.861C536.3 109.752 535.307 109.698 534.512 109.698H523.455V158.044H535.433C538.107 158.044 540.004 157.935 541.124 157.718C542.461 157.466 543.509 157.339 544.268 157.339Z" fill="white"/>
+        <path d="M342.792 40H311.561L298.399 71.6778H315.688L342.792 40Z" fill="white"/>
+      </g>
+      <defs>
+        <filter id="f0" x="0" y="0" width="623" height="247" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+          <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+          <feOffset/><feGaussianBlur stdDeviation="7.5"/><feComposite in2="hardAlpha" operator="out"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.38 0"/>
+          <feBlend mode="normal" in2="BackgroundImageFix" result="e1"/>
+          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+          <feOffset/><feGaussianBlur stdDeviation="19.5"/><feComposite in2="hardAlpha" operator="out"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.933813 0 0 0 0 0.716346 0 0 0 0.42 0"/>
+          <feBlend mode="normal" in2="e1" result="e2"/>
+          <feBlend mode="normal" in="SourceGraphic" in2="e2" result="shape"/>
+          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+          <feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.819391 0 0 0 0 0.225962 0 0 0 1 0"/>
+          <feBlend mode="normal" in2="shape" result="e3"/>
+        </filter>
+        <filter id="f1" x="15" y="14" width="593" height="219" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+          <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+          <feOffset/><feGaussianBlur stdDeviation="7.5"/><feComposite in2="hardAlpha" operator="out"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.38 0"/>
+          <feBlend mode="normal" in2="BackgroundImageFix" result="e1"/>
+          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+          <feOffset/><feGaussianBlur stdDeviation="19.5"/><feComposite in2="hardAlpha" operator="out"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.933813 0 0 0 0 0.716346 0 0 0 0.42 0"/>
+          <feBlend mode="normal" in2="e1" result="e2"/>
+          <feBlend mode="normal" in="SourceGraphic" in2="e2" result="shape"/>
+          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+          <feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.819391 0 0 0 0 0.225962 0 0 0 1 0"/>
+          <feBlend mode="normal" in2="shape" result="e3"/>
+        </filter>
+        <filter id="f2" x="36.7695" y="1" width="549.262" height="202.981" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+          <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+          <feOffset/><feGaussianBlur stdDeviation="7.5"/><feComposite in2="hardAlpha" operator="out"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.38 0"/>
+          <feBlend mode="normal" in2="BackgroundImageFix" result="e1"/>
+          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+          <feOffset/><feGaussianBlur stdDeviation="19.5"/><feComposite in2="hardAlpha" operator="out"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.933813 0 0 0 0 0.716346 0 0 0 0.42 0"/>
+          <feBlend mode="normal" in2="e1" result="e2"/>
+          <feBlend mode="normal" in="SourceGraphic" in2="e2" result="shape"/>
+          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+          <feOffset/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 0.819391 0 0 0 0 0.225962 0 0 0 1 0"/>
+          <feBlend mode="normal" in2="shape" result="e3"/>
+        </filter>
+      </defs>
+    </svg>
   )
 }

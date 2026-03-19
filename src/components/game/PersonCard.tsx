@@ -16,11 +16,12 @@ export function PersonCard({ name, profilePath, subtitle, status = 'neutral', si
   const [modalOpen, setModalOpen] = useState(false)
   const [originRect, setOriginRect] = useState<DOMRect | undefined>(undefined)
   const avatarRef = useRef<HTMLDivElement>(null)
-  const dim = size === 'sm' ? 40 : 56
+  const dim = size === 'sm' ? 44 : 56
+  const isCorrect = status === 'correct'
   const borderColor =
-    status === 'correct'   ? 'var(--correct)' :
+    isCorrect              ? 'transparent' :
     status === 'incorrect' ? '#f87171' :
-    'var(--border-hover)'
+    'var(--gold-border)'
 
   const hasPhoto = !!profilePath
   const largeSrc = profilePath ? `${IMAGE_BASE_LG}${profilePath}` : null
@@ -35,33 +36,41 @@ export function PersonCard({ name, profilePath, subtitle, status = 'neutral', si
             setModalOpen(true)
           } : undefined}
           style={{
-            width: dim, height: dim, borderRadius: '50%', overflow: 'hidden',
-            border: `2px solid ${borderColor}`,
-            background: 'var(--bg-raised)', flexShrink: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: dim, height: dim, borderRadius: '50%',
+            padding: isCorrect ? 2 : 0,
+            background: isCorrect ? 'var(--gold-gradient)' : 'none',
+            flexShrink: 0,
             cursor: hasPhoto ? 'zoom-in' : 'default',
-            transition: 'transform 0.15s, border-color 0.15s',
+            transition: 'transform 0.15s',
+            boxShadow: isCorrect ? '0 0 10px rgba(212,168,67,0.3)' : '0 2px 8px rgba(0,0,0,0.3)',
           }}
           onMouseEnter={(e) => { if (hasPhoto) (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.08)' }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1)' }}
         >
-          {profilePath ? (
-            <img
-              src={`${IMAGE_BASE_SM}${profilePath}`}
-              alt={name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }}
-            />
-          ) : (
-            <span style={{ color: 'var(--text-soft)', fontSize: '1.1rem', fontWeight: 700 }}>
-              {name.charAt(0)}
-            </span>
-          )}
+          <div style={{
+            width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden',
+            border: isCorrect ? 'none' : `2px solid ${borderColor}`,
+            background: 'var(--bg-raised)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {profilePath ? (
+              <img
+                src={`${IMAGE_BASE_SM}${profilePath}`}
+                alt={name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }}
+              />
+            ) : (
+              <span style={{ color: 'var(--text-soft)', fontSize: '1.1rem', fontWeight: 700 }}>
+                {name.charAt(0)}
+              </span>
+            )}
+          </div>
         </div>
-        <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text)', lineHeight: 1.3 }}>
+        <span style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--text)', lineHeight: 1.3 }}>
           {name}
         </span>
         {subtitle && (
-          <span style={{ fontSize: '0.6rem', color: 'var(--text-soft)' }}>{subtitle}</span>
+          <span style={{ fontSize: '0.58rem', color: 'var(--text-soft)' }}>{subtitle}</span>
         )}
       </div>
 

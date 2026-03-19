@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import type { MovieSummary } from '#/categories/movie/types'
+import { Search, Clapperboard } from 'lucide-react'
 
 const IMAGE_BASE = 'https://image.tmdb.org/t/p/w92'
 
@@ -59,14 +60,15 @@ export function SearchBar({ movies, onSelect, disabled = false, alreadyGuessed }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div style={{ display: 'flex', gap: 10 }}>
         {/* Input */}
         <div style={{ position: 'relative', flex: 1 }}>
           <span style={{
-            position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
-            fontSize: '0.9rem', pointerEvents: 'none', opacity: 0.5,
+            position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)',
+            color: selected ? 'var(--gold)' : 'var(--text-soft)',
+            display: 'flex', pointerEvents: 'none',
           }}>
-            {selected ? '🎬' : '🔍'}
+            {selected ? <Clapperboard size={16} /> : <Search size={16} />}
           </span>
           <input
             ref={inputRef}
@@ -85,14 +87,15 @@ export function SearchBar({ movies, onSelect, disabled = false, alreadyGuessed }
             onKeyDown={onKeyDown}
             style={{
               width: '100%',
-              padding: '14px 14px 14px 40px',
-              background: selected ? 'rgba(232,184,75,0.07)' : 'var(--bg-input)',
-              border: `1.5px solid ${focused ? (selected ? 'rgba(232,184,75,0.6)' : 'rgba(255,255,255,0.2)') : 'var(--border-strong)'}`,
-              borderRadius: 12,
+              padding: '14px 14px 14px 44px',
+              background: selected ? 'rgba(212,168,67,0.07)' : 'var(--bg-input)',
+              border: `2px solid ${focused ? 'var(--gold)' : selected ? 'var(--gold-border)' : 'var(--gold-border)'}`,
+              borderRadius: 50,
               color: 'var(--text)',
               fontSize: '0.95rem',
               outline: 'none',
-              transition: 'border-color 0.15s, background 0.15s',
+              transition: 'border-color 0.2s, background 0.2s, box-shadow 0.2s',
+              boxShadow: focused ? 'inset 0 0 18px rgba(255,238,183,0.1), inset 0 0 2px rgba(255,209,58,0.3)' : 'inset 0 0 18px rgba(255,238,183,0.07), inset 0 0 2px rgba(255,209,58,0.25)',
               opacity: disabled ? 0.5 : 1,
               cursor: disabled ? 'not-allowed' : 'text',
             }}
@@ -104,12 +107,12 @@ export function SearchBar({ movies, onSelect, disabled = false, alreadyGuessed }
               position: 'absolute',
               top: 'calc(100% + 6px)',
               left: 0, right: 0,
-              background: '#1a1d2a',
-              border: '1.5px solid var(--border-strong)',
-              borderRadius: 12,
+              background: '#111628',
+              border: '1.5px solid var(--gold-border)',
+              borderRadius: 14,
               overflow: 'hidden',
               zIndex: 100,
-              boxShadow: '0 20px 60px rgba(0,0,0,0.7)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.7), 0 0 20px var(--gold-glow)',
               listStyle: 'none',
               padding: 4,
             }}>
@@ -123,8 +126,8 @@ export function SearchBar({ movies, onSelect, disabled = false, alreadyGuessed }
                       width: '100%',
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '8px 10px',
-                      background: i === highlighted ? 'rgba(232,184,75,0.1)' : 'transparent',
-                      border: 'none', borderRadius: 8,
+                      background: i === highlighted ? 'var(--gold-dim)' : 'transparent',
+                      border: 'none', borderRadius: 10,
                       cursor: 'pointer', textAlign: 'left',
                       transition: 'background 0.1s',
                     }}
@@ -168,27 +171,22 @@ export function SearchBar({ movies, onSelect, disabled = false, alreadyGuessed }
           onClick={submit}
           disabled={!canSubmit}
           style={{
-            padding: '14px 22px',
-            borderRadius: 12,
-            fontWeight: 700, fontSize: '0.9rem',
-            background: canSubmit ? 'var(--gold)' : 'var(--bg-card)',
-            color: canSubmit ? '#080a0f' : 'var(--text-muted)',
-            border: `1.5px solid ${canSubmit ? 'transparent' : 'var(--border-strong)'}`,
+            padding: '14px 28px',
+            borderRadius: 50,
+            fontWeight: 700, fontSize: '0.95rem',
+            letterSpacing: '0.03em',
+            background: canSubmit ? 'transparent' : 'transparent',
+            color: canSubmit ? 'var(--gold-light)' : 'var(--text-muted)',
+            border: `2px solid ${canSubmit ? 'var(--gold)' : 'var(--gold-border)'}`,
             cursor: canSubmit ? 'pointer' : 'not-allowed',
             transition: 'all 0.2s',
             flexShrink: 0,
+            boxShadow: canSubmit ? 'inset 0 0 18px rgba(255,238,183,0.1), inset 0 0 2px rgba(255,209,58,0.3)' : 'inset 0 0 18px rgba(255,238,183,0.07), inset 0 0 2px rgba(255,209,58,0.25)',
           }}
         >
-          Valider →
+          Valider
         </button>
       </div>
-
-      {/* Selection confirm */}
-      {selected && (
-        <p style={{ fontSize: '0.75rem', color: 'var(--gold)', paddingLeft: 4 }}>
-          🎬 <strong>{selected.title}</strong> sélectionné — clique sur Valider pour confirmer
-        </p>
-      )}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import type { ActorComparison, CountryComparison, DirectorComparison, GenreComparison, GuessResult, RatingComparison, YearComparison } from '#/core/types'
 import { Calendar, Globe, Star, Users, Clapperboard } from 'lucide-react'
 import { PersonCard } from './PersonCard'
@@ -22,35 +22,41 @@ export function GuessRow({ result, index }: GuessRowProps) {
 
   return (
     <div
-      className="slide-up"
-      style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border)',
-        borderRadius: 14,
-        overflow: 'hidden',
-        animationDelay: `${index * 40}ms`,
-      }}
+      className="gold-card slide-up"
+      style={{ animationDelay: `${index * 40}ms` }}
     >
       {/* Title bar */}
       <div style={{
-        padding: '10px 16px',
-        borderBottom: '1px solid var(--border)',
+        padding: '12px 18px',
+        borderBottom: '1px solid var(--gold-border)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        background: 'var(--bg-raised)',
+        background: 'linear-gradient(135deg, rgba(212,168,67,0.06), transparent)',
       }}>
-        <span style={{ fontWeight: 700, color: 'var(--text)', fontSize: '0.95rem' }}>
+        <span style={{
+          fontFamily: '"Playfair Display", Georgia, serif',
+          fontWeight: 700,
+          fontStyle: 'normal',
+          color: 'var(--text)',
+          fontSize: '1.1rem',
+        }}>
           {result.guessedMovieTitle}
         </span>
-        <span style={{ fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.08em', color: 'var(--text-soft)', textTransform: 'uppercase' }}>
+        <span style={{
+          fontFamily: '"Bebas Neue", sans-serif',
+          fontSize: '1.1rem',
+          fontWeight: 700,
+          color: 'var(--gold)',
+          letterSpacing: '0.05em',
+        }}>
           #{index + 1}
         </span>
       </div>
 
-      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-        {/* Chips row : Année · Pays · Note */}
+        {/* Chips row : Année · Pays · Note · Genres */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {year && (
             <Chip icon={<Calendar size={11} />} label="Année" status={year.status}>
@@ -75,21 +81,18 @@ export function GuessRow({ result, index }: GuessRowProps) {
               {rating.value}{rating.direction !== 'exact' && <Arrow dir={rating.direction} />}
             </Chip>
           )}
-        </div>
 
-        {/* Genres */}
-        {genres && (
-          <Section
-            icon={<Clapperboard size={11} />}
-            label="Genres"
-          >
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {genres.genres.map((g) => (
-                <Pill key={g.id} status={g.match ? 'correct' : 'neutral'}>{g.name}</Pill>
-              ))}
-            </div>
-          </Section>
-        )}
+          {/* Genres inline */}
+          {genres && (
+            <Chip icon={<Clapperboard size={11} />} label="Genres" status={genres.matchedCount > 0 ? 'correct' : 'incorrect'}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                {genres.genres.map((g) => (
+                  <Pill key={g.id} status={g.match ? 'correct' : 'neutral'}>{g.name}</Pill>
+                ))}
+              </div>
+            </Chip>
+          )}
+        </div>
 
         {/* Director */}
         {director?.director && (
@@ -122,8 +125,15 @@ const CAST_LIMIT = 7
 
 function CastSection({ actors, matchedActors, totalActors }: { actors: ActorComparison; matchedActors: number; totalActors: number }) {
   const [expanded, setExpanded] = useState(false)
-  const visible = expanded ? actors.actors : actors.actors.slice(0, CAST_LIMIT)
   const hasMore = totalActors > CAST_LIMIT
+  const innerRef = useRef<HTMLDivElement>(null)
+  const [height, setHeight] = useState<number | undefined>(undefined)
+
+  useEffect(() => {
+    if (innerRef.current) {
+      setHeight(innerRef.current.scrollHeight)
+    }
+  }, [expanded])
 
   return (
     <Section
@@ -132,18 +142,34 @@ function CastSection({ actors, matchedActors, totalActors }: { actors: ActorComp
       count={`${matchedActors}/${totalActors}`}
       status={matchedActors > 0 ? 'correct' : undefined}
     >
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-        {visible.map((a) => (
-          <div key={a.id} style={{ opacity: a.match ? 1 : 0.28, transition: 'opacity 0.2s' }}>
-            <PersonCard
-              name={a.name}
-              profilePath={a.profilePath}
-              subtitle={a.character}
-              status={a.match ? 'correct' : 'neutral'}
-              size="sm"
-            />
+      <div style={{
+        overflow: 'visible',
+        transition: 'max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}>
+        <div ref={innerRef}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, paddingTop: 4 }}>
+            {actors.actors.map((a, i) => {
+              const hidden = !expanded && i >= CAST_LIMIT
+              return (
+                <div key={a.id} style={{
+                  opacity: hidden ? 0 : (a.match ? 1 : 0.28),
+                  transform: hidden ? 'scale(0.9)' : 'scale(1)',
+                  transition: 'opacity 0.3s ease, transform 0.3s ease',
+                  transitionDelay: !hidden && i >= CAST_LIMIT ? `${(i - CAST_LIMIT) * 40}ms` : '0ms',
+                  display: hidden ? 'none' : undefined,
+                }}>
+                  <PersonCard
+                    name={a.name}
+                    profilePath={a.profilePath}
+                    subtitle={a.character}
+                    status={a.match ? 'correct' : 'neutral'}
+                    size="sm"
+                  />
+                </div>
+              )
+            })}
           </div>
-        ))}
+        </div>
       </div>
       {hasMore && (
         <button
@@ -152,13 +178,14 @@ function CastSection({ actors, matchedActors, totalActors }: { actors: ActorComp
           style={{
             marginTop: 8,
             background: 'none',
-            border: '1px solid var(--border)',
+            border: '1px solid var(--gold-border)',
             borderRadius: 99,
-            padding: '4px 14px',
-            fontSize: '0.7rem',
+            padding: '5px 16px',
+            fontSize: '0.72rem',
             fontWeight: 600,
-            color: 'var(--text-soft)',
+            color: 'var(--gold)',
             cursor: 'pointer',
+            transition: 'all 0.2s',
           }}
         >
           {expanded ? 'Voir moins' : `Voir les ${totalActors - CAST_LIMIT} autres`}
@@ -179,9 +206,9 @@ function Section({ icon, label, count, status, children }: {
 }) {
   const countColor = status === 'correct' ? 'var(--correct)' : status === 'incorrect' ? '#f87171' : 'var(--text-soft)'
   return (
-    <div style={{ borderTop: '1px solid var(--border)', paddingTop: 10 }}>
+    <div style={{ borderTop: '1px solid rgba(212,168,67,0.15)', paddingTop: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
-        {icon && <span style={{ color: 'var(--text-soft)', display: 'flex' }}>{icon}</span>}
+        {icon && <span style={{ color: 'var(--gold)', display: 'flex', opacity: 0.7 }}>{icon}</span>}
         <p style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.1em', color: 'var(--text-soft)', textTransform: 'uppercase' }}>
           {label}
         </p>
@@ -203,10 +230,10 @@ function Chip({ icon, label, status, children }: {
   children: React.ReactNode
 }) {
   const colors = {
-    correct:   { bg: 'rgba(74,222,128,0.1)',  border: 'rgba(74,222,128,0.3)',  text: 'var(--correct)' },
-    close:     { bg: 'rgba(251,146,60,0.1)',   border: 'rgba(251,146,60,0.3)',  text: 'var(--close)' },
-    incorrect: { bg: 'var(--wrong-bg)',        border: 'var(--border)',         text: 'var(--text-soft)' },
-    neutral:   { bg: 'var(--wrong-bg)',        border: 'var(--border)',         text: 'var(--text)' },
+    correct:   { bg: 'rgba(74,222,128,0.08)',  border: 'rgba(74,222,128,0.3)',  text: 'var(--correct)' },
+    close:     { bg: 'rgba(251,146,60,0.08)',   border: 'rgba(251,146,60,0.3)',  text: 'var(--close)' },
+    incorrect: { bg: 'rgba(255,255,255,0.03)',  border: 'var(--border-strong)',   text: 'var(--text-soft)' },
+    neutral:   { bg: 'rgba(255,255,255,0.03)',  border: 'var(--border-strong)',   text: 'var(--text)' },
   }[status]
 
   return (
@@ -217,7 +244,7 @@ function Chip({ icon, label, status, children }: {
       minWidth: 64,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        {icon && <span style={{ color: 'var(--text-soft)', display: 'flex', opacity: 0.7 }}>{icon}</span>}
+        {icon && <span style={{ color: 'var(--gold)', display: 'flex', opacity: 0.7 }}>{icon}</span>}
         <span style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.09em', color: 'var(--text-soft)', textTransform: 'uppercase' }}>
           {label}
         </span>
@@ -233,12 +260,12 @@ function Pill({ status, children }: { status: 'correct' | 'close' | 'neutral'; c
   const colors = {
     correct: { bg: 'rgba(74,222,128,0.1)', border: 'rgba(74,222,128,0.3)', text: 'var(--correct)' },
     close:   { bg: 'rgba(251,146,60,0.1)', border: 'rgba(251,146,60,0.3)', text: 'var(--close)' },
-    neutral: { bg: 'var(--wrong-bg)',      border: 'var(--border)',        text: 'var(--text-soft)' },
+    neutral: { bg: 'rgba(255,255,255,0.04)', border: 'var(--border-strong)', text: 'var(--text-soft)' },
   }[status]
 
   return (
     <span style={{
-      padding: '3px 10px', borderRadius: 99, fontSize: '0.75rem', fontWeight: 600,
+      padding: '2px 8px', borderRadius: 99, fontSize: '0.72rem', fontWeight: 600,
       background: colors.bg, color: colors.text, border: `1px solid ${colors.border}`,
     }}>
       {children}
@@ -247,5 +274,5 @@ function Pill({ status, children }: { status: 'correct' | 'close' | 'neutral'; c
 }
 
 function Arrow({ dir }: { dir: 'up' | 'down' }) {
-  return <span style={{ fontSize: '0.95rem', lineHeight: 1 }}>{dir === 'up' ? '↑' : '↓'}</span>
+  return <span style={{ fontSize: '0.95rem', lineHeight: 1, color: 'var(--gold)' }}>{dir === 'up' ? '↑' : '↓'}</span>
 }
