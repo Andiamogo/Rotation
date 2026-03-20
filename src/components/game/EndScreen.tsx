@@ -47,9 +47,9 @@ export function EndScreen({ state, targetMovie }: EndScreenProps) {
               pointerEvents: 'none',
             }} />
             <h2 style={{
-              fontFamily: won ? '"Limelight", cursive' : '"Bebas Neue", Impact, sans-serif',
+              fontFamily: '"Limelight", cursive',
               fontSize: won ? '3rem' : '2.4rem',
-              letterSpacing: won ? '0.08em' : '0.15em',
+              letterSpacing: won ? '0.08em' : '0.1em',
               color: 'var(--gold-light)',
               lineHeight: 1,
               textShadow: '0 0 20px var(--gold-glow), 0 0 40px rgba(212,168,67,0.1)',
@@ -58,11 +58,6 @@ export function EndScreen({ state, targetMovie }: EndScreenProps) {
             </h2>
           </div>
 
-          {!won && (
-            <p style={{ color: 'var(--text-soft)', fontSize: '0.9rem', marginTop: 8 }}>
-              Le film était :
-            </p>
-          )}
         </div>
       </div>
 
