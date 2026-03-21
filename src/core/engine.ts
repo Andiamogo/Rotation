@@ -36,6 +36,7 @@ export function createInitialState(targetMovieId: number, date: string): GameSta
     confirmedActors: [],
     confirmedDirector: null,
     yearRange: { min: null, max: null, exact: null },
+    ratingRange: { min: null, max: null, exact: null },
     confirmedCountry: null,
   }
 }
@@ -77,6 +78,7 @@ function aggregateKnowledge(state: GameState): GameState {
   let confirmedActors = [...state.confirmedActors]
   let confirmedDirector = state.confirmedDirector
   let yearRange = { ...state.yearRange }
+  let ratingRange = { ...state.ratingRange }
   let confirmedCountry = state.confirmedCountry
 
   const lastGuess = state.guesses[state.guesses.length - 1]
@@ -125,6 +127,27 @@ function aggregateKnowledge(state: GameState): GameState {
         }
         break
       }
+      case 'rating': {
+        if (comp.status === 'correct') {
+          ratingRange = { min: comp.value, max: comp.value, exact: comp.value }
+        } else {
+          if (comp.direction === 'up' && (ratingRange.min === null || comp.value > ratingRange.min)) {
+            ratingRange = { ...ratingRange, min: comp.value }
+          }
+          if (comp.direction === 'down' && (ratingRange.max === null || comp.value < ratingRange.max)) {
+            ratingRange = { ...ratingRange, max: comp.value }
+          }
+          // Si min et max encadrent une seule valeur possible (pas de 0.1 entre les deux)
+          if (ratingRange.min !== null && ratingRange.max !== null) {
+            const diff = Math.round((ratingRange.max - ratingRange.min) * 10)
+            if (diff === 2) {
+              const exact = Math.round((ratingRange.min + 0.1) * 10) / 10
+              ratingRange = { min: exact, max: exact, exact }
+            }
+          }
+        }
+        break
+      }
       case 'country': {
         if (comp.hasMatch && !confirmedCountry) {
           confirmedCountry = comp.values.find((v) => v.match)?.code ?? null
@@ -134,7 +157,7 @@ function aggregateKnowledge(state: GameState): GameState {
     }
   }
 
-  return { ...state, confirmedGenres, confirmedActors, confirmedDirector, yearRange, confirmedCountry }
+  return { ...state, confirmedGenres, confirmedActors, confirmedDirector, yearRange, ratingRange, confirmedCountry }
 }
 
 function unlockHints(state: GameState, target: Movie): Hint[] {

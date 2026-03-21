@@ -93,6 +93,7 @@ export interface GameState {
   confirmedActors: Actor[]
   confirmedDirector: Director | null
   yearRange: { min: number | null; max: number | null; exact: number | null }
+  ratingRange: { min: number | null; max: number | null; exact: number | null }
   confirmedCountry: string | null
 }
 

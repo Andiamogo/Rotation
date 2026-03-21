@@ -1,5 +1,5 @@
 import type { GameState } from '#/core/types'
-import { Calendar, Globe, Users, Clapperboard } from 'lucide-react'
+import { Calendar, Globe, Star, Users, Clapperboard } from 'lucide-react'
 import { HintList } from './HintBadge'
 import { PersonCard } from './PersonCard'
 import { CountryBadge } from './CountryBadge'
@@ -11,14 +11,16 @@ interface RecapPanelProps {
 export function RecapPanel({ state }: RecapPanelProps) {
   if (state.outcome === 'won') return null
 
-  const { confirmedGenres, confirmedActors, confirmedDirector, yearRange, confirmedCountry, hints, guesses } = state
+  const { confirmedGenres, confirmedActors, confirmedDirector, yearRange, ratingRange, confirmedCountry, hints, guesses } = state
 
   const lastGenreComp = guesses.flatMap((g) => g.comparisons).filter((c) => c.attribute === 'genres').pop()
   const targetGenreCount = lastGenreComp && 'targetCount' in lastGenreComp ? lastGenreComp.targetCount : null
 
+  const hasRating = ratingRange.exact !== null || ratingRange.min !== null || ratingRange.max !== null
   const hasChips =
     confirmedGenres.length > 0 ||
     yearRange.exact !== null || yearRange.min !== null || yearRange.max !== null ||
+    hasRating ||
     confirmedCountry
 
   const hasContent = hasChips || confirmedDirector || confirmedActors.length > 0 || hints.length > 0
@@ -31,6 +33,14 @@ export function RecapPanel({ state }: RecapPanelProps) {
     : yearRange.min !== null && yearRange.max !== null ? `${yearRange.min} – ${yearRange.max}`
     : yearRange.min !== null ? `Après ${yearRange.min}`
     : yearRange.max !== null ? `Avant ${yearRange.max}`
+    : null
+
+  const ratingExact = ratingRange.exact !== null
+  const ratingLabel =
+    ratingRange.exact !== null ? `${ratingRange.exact}`
+    : ratingRange.min !== null && ratingRange.max !== null ? `${ratingRange.min} – ${ratingRange.max}`
+    : ratingRange.min !== null ? `Supérieur à ${ratingRange.min}`
+    : ratingRange.max !== null ? `Inférieur à ${ratingRange.max}`
     : null
 
   return (
@@ -58,13 +68,19 @@ export function RecapPanel({ state }: RecapPanelProps) {
         Ce que tu sais
       </p>
 
-      {/* Year & country */}
-      {(yearLabel || confirmedCountry) && (
+      {/* Year, rating & country */}
+      {(yearLabel || ratingLabel || confirmedCountry) && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
           {yearLabel && (
             <span className={yearExact ? 'gold-pill' : 'unknown-pill'}>
               <span className={yearExact ? 'gold-pill-icon' : ''} style={yearExact ? undefined : { display: 'flex', opacity: 0.5 }}><Calendar size={10} /></span>
               {yearLabel}
+            </span>
+          )}
+          {ratingLabel && (
+            <span className={ratingExact ? 'gold-pill' : 'unknown-pill'}>
+              <span className={ratingExact ? 'gold-pill-icon' : ''} style={ratingExact ? undefined : { display: 'flex', opacity: 0.5 }}><Star size={10} /></span>
+              {ratingLabel}
             </span>
           )}
           {confirmedCountry && (
