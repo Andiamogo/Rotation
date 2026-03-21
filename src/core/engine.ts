@@ -199,7 +199,7 @@ function buildHintValue(type: Hint['type'], target: Movie, existingHints: Hint[]
     case 'director':
       return target.director ? { type: 'director', director: target.director } : null
     case 'wordCount':
-      return { type: 'wordCount', count: target.title.trim().split(/\s+/).length }
+      return { type: 'wordCount', count: target.title.trim().split(/\s+/).filter(w => /\p{L}|\d/u.test(w)).length }
     case 'synopsis':
       return { type: 'synopsis', text: target.overview }
   }
